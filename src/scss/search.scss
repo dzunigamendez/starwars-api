@@ -1,0 +1,37 @@
+.search {
+  position: relative;
+  margin: 20px 0;
+  padding-bottom: 20px;
+
+  .loader {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+}
+
+.search__form {
+  display: flex;
+}
+
+.search__input {
+  height: 35px;
+  padding: 0 10px;
+  flex-grow: 1;
+  border: solid lightgray;
+  border-width: 1px 0 1px 1px;
+}
+
+.search__submit {
+  font-size: 16px;
+  height: 35px;
+  padding: 0 20px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid lightgray;
+  background: lightgray;
+
+  &:hover {
+    background: darken(lightgray, 10);
+  }
+}
