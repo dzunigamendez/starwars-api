@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import qs from 'query-string';
 
 function useHistory() {
-  const [params, setParams] = useState(qs.parse(window.location.search));
+  const [params, setParams] = useState(parseParams);
 
   const updateUrl = nextParams => {
     const keys = Object.keys(nextParams).filter(key => nextParams[key]);
@@ -29,17 +29,33 @@ function useHistory() {
 
   useEffect(() => {
     const handlePopState = () => {
-      const params = qs.parse(window.location.search);
+      const params = parseParams();
       setParams(params);
     };
 
-    window.addListener('popstate', handlePopState);
+    window.addEventListener('popstate', handlePopState);
     return () => {
-      window.removeListener('popstate', handlePopState);
+      window.removeEventListener('popstate', handlePopState);
     };
   }, []);
 
   return [params, updateParams];
+}
+
+function parseParams() {
+  const params = qs.parse(window.location.search);
+  return Object.keys(params).reduce((acc, key) => {
+    const value = params[key];
+    if (!value) {
+      return acc;
+    }
+    if (isNaN(value)) {
+      acc[key] = value;
+    } else {
+      acc[key] = Number(value);
+    }
+    return acc;
+  }, {});
 }
 
 export default useHistory;
