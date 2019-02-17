@@ -8,20 +8,37 @@ import '../scss/people.scss';
 
 const BASE_URL = 'https://swapi.co/api/people';
 
-function PeopleHooks() {
+function parseParams() {
   const params = qs.parse(window.location.search);
-  const [search, setSearch] = useState(params.search || '');
-  const [criteria, setCriteria] = useState(search);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(parseInt(params.page, 10) || 1);
-  const [data, setData] = useState({
-    count: 0,
-    results: [],
-  });
+  return {
+    search: params.search || '',
+    page: parseInt(params.page, 10) || 1,
+  };
+}
 
-  const loadData = async () => {
+function updateUrl(options) {
+  const params = Object.keys(options).reduce((acc, key) => {
+    if (options[key]) {
+      acc[key] = options[key];
+    }
+    return acc;
+  }, {});
+  let url = window.location.pathname;
+  if (params) {
+    url = `${url}?${qs.stringify(params)}`;
+  }
+  window.history.pushState(null, null, url);
+}
+
+function PeopleHooks() {
+  const [params, setParams] = useState(parseParams);
+  const [search, setSearch] = useState(params.search);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState({count: 0, results: []});
+
+  const getData = async () => {
     setLoading(true);
-    const response = await axios.get(BASE_URL, {params: {search, page}});
+    const response = await axios.get(BASE_URL, {params});
     setData(response.data);
     setLoading(false);
   };
@@ -32,29 +49,33 @@ function PeopleHooks() {
 
   const handleSearchSubmit = e => {
     e.preventDefault();
-    updateUrl({search, page});
-    setPage(1);
-    setCriteria(search);
+    updateUrl(params);
+    setParams({search, page: 1});
+  };
+
+  const handlePage = page => {
+    const nextParams = {search, page};
+    updateUrl(nextParams);
+    setParams(nextParams);
   };
 
   const handleNextPage = () => {
-    setPage(page + 1);
+    handlePage(params.page + 1);
   };
 
   const handlePrevPage = () => {
-    this.setPage(page - 1);
+    handlePage(params.page - 1);
   };
 
   const handlePopState = () => {
-    const params = qs.parse(window.location.search);
-    setSearch(params.search || '');
-    setCriteria(params.search || '');
-    setPage(parseInt(params.page, 10) || 1);
+    const nextParams = parseParams();
+    setParams(nextParams);
+    setSearch(nextParams.search);
   };
 
   useEffect(() => {
-    loadData();
-  }, [criteria, page]);
+    getData();
+  }, [params]);
 
   useEffect(() => {
     window.addEventListener('popstate', handlePopState);
@@ -78,7 +99,7 @@ function PeopleHooks() {
       />
       <Results
         loading={loading}
-        page={page}
+        page={params.page}
         size={data.results.length}
         count={data.count}
         limit={10}
@@ -89,20 +110,6 @@ function PeopleHooks() {
       </Results>
     </div>
   );
-}
-
-function updateUrl(options) {
-  const params = Object.keys(options).reduce((acc, key) => {
-    if (options[key]) {
-      acc[key] = options[key];
-    }
-    return acc;
-  }, {});
-  let url = window.location.pathname;
-  if (params) {
-    url = `${url}?${qs.stringify(params)}`;
-  }
-  window.history.pushState(null, null, url);
 }
 
 export default PeopleHooks;
