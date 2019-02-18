@@ -1,8 +1,25 @@
 import {useState, useEffect} from 'react';
 import qs from 'query-string';
 
-function useHistory() {
-  const [params, setParams] = useState(parseParams);
+function useHistory(defaultValues) {
+  const parseParams = () => {
+    const params = qs.parse(window.location.search);
+    return Object.keys(params).reduce(
+      (acc, key) => {
+        const value = params[key];
+        if (!value) {
+          return acc;
+        }
+        if (isNaN(value)) {
+          acc[key] = value;
+        } else {
+          acc[key] = Number(value);
+        }
+        return acc;
+      },
+      {...defaultValues},
+    );
+  };
 
   const updateUrl = nextParams => {
     const keys = Object.keys(nextParams).filter(key => nextParams[key]);
@@ -22,6 +39,8 @@ function useHistory() {
     window.history.pushState(null, null, url);
   };
 
+  const [params, setParams] = useState(parseParams);
+
   const updateParams = nextParams => {
     updateUrl(nextParams);
     setParams(nextParams);
@@ -30,7 +49,7 @@ function useHistory() {
   useEffect(() => {
     const handlePopState = () => {
       const params = parseParams();
-      setParams(params);
+      setParams({...defaultValues, ...params});
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -40,22 +59,6 @@ function useHistory() {
   }, []);
 
   return [params, updateParams];
-}
-
-function parseParams() {
-  const params = qs.parse(window.location.search);
-  return Object.keys(params).reduce((acc, key) => {
-    const value = params[key];
-    if (!value) {
-      return acc;
-    }
-    if (isNaN(value)) {
-      acc[key] = value;
-    } else {
-      acc[key] = Number(value);
-    }
-    return acc;
-  }, {});
 }
 
 export default useHistory;

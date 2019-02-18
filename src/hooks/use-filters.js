@@ -3,17 +3,20 @@ import axios from 'axios';
 import useHistory from '../hooks/use-history';
 import useInput from '../hooks/use-input';
 
+const INITIAL_DATA = {count: 0, results: []};
+
 function useFilters(url) {
-  const [params, updateParams] = useHistory();
-  const [search, onSearchChange] = useInput(params.search || '');
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({count: 0, results: []});
+  const [params, updateParams] = useHistory({search: '', page: 1});
+  const [search, onSearchChange] = useInput(params.search);
+  const [response, setResponse] = useState({
+    loading: false,
+    data: INITIAL_DATA,
+  });
 
   const getData = async () => {
-    setLoading(true);
+    setResponse({loading: true, data: INITIAL_DATA});
     const response = await axios.get(url, {params});
-    setData(response.data);
-    setLoading(false);
+    setResponse({loading: false, data: response.data});
   };
 
   const onSearchSubmit = e => {
@@ -39,8 +42,8 @@ function useFilters(url) {
   }, [params]);
 
   return {
-    loading,
-    data,
+    loading: response.loading,
+    data: response.data,
     params,
     search,
     onSearchChange,
