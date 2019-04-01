@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Loader from './loader';
 import '../scss/search.scss';
 
-function Search({value, onChange, onSubmit, loading}) {
+function Search({value, onChange, onSubmit}) {
   return (
     <div className="search">
       <form className="search__form" onSubmit={onSubmit}>
@@ -12,14 +11,12 @@ function Search({value, onChange, onSubmit, loading}) {
           Search
         </button>
       </form>
-      <Loader loading={loading} />
     </div>
   );
 }
 
 Search.propTypes = {
   value: PropTypes.string,
-  loading: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

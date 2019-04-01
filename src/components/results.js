@@ -1,23 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Character from './character';
+import Loader from './loader';
 import '../scss/results.scss';
 
-function Results({
-  loading,
-  page,
-  count,
-  limit,
-  size,
-  onPrevPage,
-  onNextPage,
-  children,
-}) {
+function Results({loading, params, data, onPrevPage, onNextPage}) {
   if (loading) {
-    return null;
+    return <Loader />;
   }
 
+  const {page} = params;
+  const {count} = data;
+  const limit = 10;
   const start = (page - 1) * limit + 1;
-  const end = (page - 1) * limit + size;
+  const end = (page - 1) * limit + data.results.length;
   const pages = Math.ceil(count / limit);
 
   let summary = null;
@@ -52,13 +48,17 @@ function Results({
     );
   }
 
+  const items = data.results.map(item => (
+    <Character item={item} key={item.url} />
+  ));
+
   return (
     <div className="results">
       <div className="results__summary">
         <span>{summary}</span>
         <span>{total}</span>
       </div>
-      <div className="results__wrapper">{children}</div>
+      <div className="results__wrapper">{items}</div>
       {paging}
     </div>
   );
@@ -66,10 +66,8 @@ function Results({
 
 Results.propTypes = {
   loading: PropTypes.bool.isRequired,
-  page: PropTypes.number.isRequired,
-  size: PropTypes.number.isRequired,
-  count: PropTypes.number.isRequired,
-  limit: PropTypes.number.isRequired,
+  params: PropTypes.object.isRequired,
+  data: PropTypes.object.isRequired,
   onPrevPage: PropTypes.func.isRequired,
   onNextPage: PropTypes.func.isRequired,
   children: PropTypes.any,
